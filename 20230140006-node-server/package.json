@@ -1,5 +1,5 @@
 {
-  "name": "my-node-server",
+  "name": "20230140006-node-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -10,14 +10,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "express": "^5.1.0",
-    "express-validator": "^7.3.0",
-    "jsonwebtoken": "^9.0.2",
-    "jwt-decode": "^4.0.0",
-    "mysql2": "^3.15.3",
-    "sequelize": "^6.37.7",
-    "sequelize-cli": "^6.6.3"
+    "express-validator": "^7.3.1",
+    "jsonwebtoken": "^9.0.2"
   }
 }

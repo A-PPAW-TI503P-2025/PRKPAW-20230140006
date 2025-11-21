@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    nama: {
+    nama: { //hapus bagian nama ini
       type: DataTypes.STRING,
       allowNull: false,
     },
