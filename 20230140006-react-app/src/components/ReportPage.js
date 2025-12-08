@@ -102,8 +102,8 @@ function ReportPage() {
                     </td>
 
                     <td className="px-6 py-4 text-sm text-gray-500">
-                      {presensi.checkout
-                        ? new Date(presensi.checkout).toLocaleString(
+                      {presensi.checkOut
+                        ? new Date(presensi.checkOut).toLocaleString(
                             "id-ID",
                             { timeZone: "Asia/Jakarta" }
                           )
