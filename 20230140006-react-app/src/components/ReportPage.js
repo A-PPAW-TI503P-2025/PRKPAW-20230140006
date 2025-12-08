@@ -47,7 +47,7 @@ function ReportPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
+    <div className="max-w-7xl mx-auto p-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">
         Laporan Presensi Harian
       </h1>
@@ -80,21 +80,12 @@ function ReportPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Check-In
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Check-Out
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Latitude
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Longitude
-                </th>
+                <th className="px-6 py-3">Nama</th>
+                <th className="px-6 py-3">Check-In</th>
+                <th className="px-6 py-3">Check-Out</th>
+                <th className="px-6 py-3">Latitude</th>
+                <th className="px-6 py-3">Longitude</th>
+                <th className="px-6 py-3">Foto</th> {/* 👈 KOLUM BARU */}
               </tr>
             </thead>
 
@@ -102,18 +93,15 @@ function ReportPage() {
               {reports.length > 0 ? (
                 reports.map((presensi) => (
                   <tr key={presensi.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {presensi.user ? presensi.user.nama : "N/A"}
-                    </td>
+                    <td className="px-6 py-4">{presensi.user?.nama ?? "N/A"}</td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500">
                       {new Date(presensi.checkIn).toLocaleString("id-ID", {
                         timeZone: "Asia/Jakarta",
                       })}
                     </td>
 
-                    {/* FIXED: pakai checkout, bukan checkOut */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500">
                       {presensi.checkout
                         ? new Date(presensi.checkout).toLocaleString(
                             "id-ID",
@@ -122,19 +110,38 @@ function ReportPage() {
                         : "Belum Check-Out"}
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500">
                       {presensi.latitude || "N/A"}
                     </td>
 
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 text-sm text-gray-500">
                       {presensi.longitude || "N/A"}
+                    </td>
+
+                    {/* FOTO BUKTI PRESENSI */}
+                    <td className="px-6 py-4">
+                      {presensi.photoUrl ? (
+                        <a href={presensi.photoUrl} target="_blank" rel="noreferrer">
+                          <img
+                            src={presensi.photoUrl}
+                            alt="Foto Presensi"
+                            className="w-16 h-16 object-cover rounded-md shadow"
+                          />
+                        </a>
+                      ) : (
+                        <span className="text-gray-400 italic">
+                          Tidak ada foto
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  {/* FIXED: colSpan 5 */}
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
                     Tidak ada data yang ditemukan.
                   </td>
                 </tr>

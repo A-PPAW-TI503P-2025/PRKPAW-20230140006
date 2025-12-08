@@ -2,6 +2,29 @@
 const { Presensi, User } = require("../models");
 const { format } = require("date-fns-tz");
 const timeZone = "Asia/Jakarta";
+const multer = require('multer');
+const path = require('path');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); 
+  },
+  filename: (req, file, cb) => {
+    // Format nama file: userId-timestamp.jpg
+    cb(null, `${req.user.id}-${Date.now()}${path.extname(file.originalname)}`);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Hanya file gambar yang diperbolehkan!'), false);
+  }
+};
+
+exports.upload = multer({ storage: storage, fileFilter: fileFilter });
+
 
 
 // CHECK-IN
@@ -11,6 +34,8 @@ exports.CheckIn = async (req, res) => {
     const namaUser = req.user.nama;
     const waktuSekarang = new Date();
     const {latitude, longitude} = req.body;
+    const buktiFoto = req.file ? req.file.path : null;
+    const photo = req.file ? req.file.filename : null;
 
     // Cek apakah sudah check-in sebelumnya
     const existingRecord = await Presensi.findOne({
@@ -29,6 +54,8 @@ exports.CheckIn = async (req, res) => {
       checkIn: waktuSekarang,
       latitude: latitude,
       longitude: longitude,
+      buktiFoto: buktiFoto,
+      photo: photo,
     });
 
     return res.status(201).json({
@@ -42,6 +69,7 @@ exports.CheckIn = async (req, res) => {
         userId: newRecord.userId,
         checkIn: newRecord.checkIn,
         checkOut: null,
+        photoUrl: photo ? `http://localhost:3001/uploads/${photo}` : null
       }
     });
 
@@ -113,11 +141,7 @@ exports.deletePresensi = async (req, res) => {
       return res.status(200).json({ message: "Data tidak ditemukan atau sudah dihapus" });
     }
 
-    if (record.userId !== userId) {
-      return res.status(403).json({
-        message: "Akses ditolak; Anda bukan pemilik catatan ini.",
-      });
-    }
+    // Siapapun bisa menghapus data presensi, tanpa cek pemilik
 
     await record.destroy();
     return res.status(200).json({ message: "Data berhasil dihapus" });

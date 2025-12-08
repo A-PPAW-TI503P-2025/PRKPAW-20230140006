@@ -1,10 +1,12 @@
 // src/components/PresensiPage.js
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Webcam from "react-webcam";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import icon from "leaflet/dist/images/marker-icon.png";
 import iconShadow from "leaflet/dist/images/marker-shadow.png";
+
 
 L.Marker.prototype.options.icon = L.icon({
   iconUrl: icon,
@@ -23,6 +25,20 @@ function PresensiPage() {
 
   const [coords, setCoords] = useState(null); // {lat, lng}
   const [isLoading, setIsLoading] = useState(true);
+  const [image, setImage] = useState(null); // State untuk menyimpan hasil foto
+  const webcamRef = useRef(null);
+
+  const capture = useCallback(() => {
+  const imageSrc = webcamRef.current.getScreenshot();
+
+  if (!imageSrc) {
+    console.log("GAGAL CAPTURE: webcam belum ready");
+    setError("Gagal mengambil foto. Coba ulangi.");
+    return;
+  }
+
+  setImage(imageSrc);
+}, [webcamRef]);
 
   const getToken = () => {
     return localStorage.getItem("token");
@@ -59,28 +75,26 @@ function PresensiPage() {
       setError("Lokasi belum didapatkan. Mohon izinkan akses lokasi.");
       return;
     }
-
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${getToken()}`,
-        },
-      };
-
-      const response = await axios.post(
-        "http://localhost:3001/api/presensi/check-in",
-        {
-          latitude: coords.lat,
-          longitude: coords.lng,
-        },
-        config
-      );
-
-      setMessage(response.data.message);
-    } catch (err) {
-      setError(err.response ? err.response.data.message : "Check-in gagal");
-    }
-  };
+     try {
+         const blob = await (await fetch(image)).blob();
+   
+         const formData = new FormData();
+         formData.append("latitude", coords.lat);
+         formData.append("longitude", coords.lng);
+         formData.append("image", blob, "selfie.jpg");
+   
+         const response = await axios.post(
+           "http://localhost:3001/api/presensi/check-in",
+   
+           formData,
+           { headers: { Authorization: `Bearer ${getToken()}` } }
+         );
+   
+         setMessage(response.data.message);
+       } catch (err) {
+         setError(err.response ? err.response.data.message : "Check-in gagal");
+       }
+     };
 
   const handleCheckOut = async () => {
     setError("");
@@ -106,25 +120,6 @@ function PresensiPage() {
   };
 
   return (
-    <>
-      {coords && (
-        <div className="my-4 border rounded-lg overflow-hidden">
-          <MapContainer
-            center={[coords.lat, coords.lng]}
-            zoom={15}
-            style={{ height: "300px", width: "100%" }}
-          >
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors'
-            />
-            <Marker position={[coords.lat, coords.lng]}>
-              <Popup>Lokasi Presensi Anda</Popup>
-            </Marker>
-          </MapContainer>
-        </div>
-      )}
-
       <div className="min-h-screen bg-gray-100 flex flex-col items-center pt-10 pb-10">
         {isLoading ? (
           <div className="bg-white p-10 rounded-lg shadow-md w-full max-w-6xl mb-8 text-center">
@@ -143,7 +138,7 @@ function PresensiPage() {
                 style={{ height: "300px", width: "100%" }}
               >
                 <TileLayer
-                  attribution='&copy; OpenStreetMap contributors'
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 <Marker position={[coords.lat, coords.lng]}>
@@ -153,15 +148,53 @@ function PresensiPage() {
             </div>
           </div>
         )}
-
+  
+        <div className="my-4 border rounded-lg overflow-hidden bg-black">
+          {image ? (
+            <img src={image} alt="Selfie" className="w-full" />
+          ) : (
+            <Webcam
+              audio={false}
+              ref={webcamRef}
+              screenshotFormat="image/jpeg"
+              className="w-full"
+              mirrored={false}
+              videoConstraints={{
+                width: 1280,
+                height: 720,
+                facingMode: "user",   // kamera depan
+                }}
+                style={{ transform: "scaleX(1)" }}  // pastikan tidak mirror
+            />
+          )}
+        </div>
+  
+        <div className="mb-4">
+          {!image ? (
+            <button
+              onClick={capture}
+              className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+            >
+              Ambil Foto
+            </button>
+          ) : (
+            <button
+              onClick={() => setImage(null)}
+              className="bg-gray-500 text-white px-4 py-2 rounded w-full"
+            >
+              Foto Ulang
+            </button>
+          )}
+        </div>
+  
         <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md text-center">
           <h2 className="text-3xl font-bold mb-6 text-gray-800">
             Lakukan Presensi
           </h2>
-
+  
           {message && <p className="text-green-600 mb-4">{message}</p>}
           {error && <p className="text-red-600 mb-4">{error}</p>}
-
+  
           <div className="flex space-x-4">
             <button
               onClick={handleCheckIn}
@@ -169,7 +202,7 @@ function PresensiPage() {
             >
               Check-In
             </button>
-
+  
             <button
               onClick={handleCheckOut}
               className="w-full py-3 px-4 bg-red-600 text-white font-semibold rounded-md shadow-sm hover:bg-red-700"
@@ -179,8 +212,8 @@ function PresensiPage() {
           </div>
         </div>
       </div>
-    </>
-  );
-}
-
-export default PresensiPage;
+    );
+  }
+  
+  export default PresensiPage;
+  

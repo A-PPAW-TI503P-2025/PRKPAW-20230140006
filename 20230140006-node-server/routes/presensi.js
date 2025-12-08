@@ -5,15 +5,14 @@ const presensiController = require('../controllers/presensiController');
 const { authenticateToken, isAdmin } = require('../middleware/permissionMiddleware');
 const { body, validationResult } = require('express-validator');
 
-// =========================
-// ROUTES UNTUK PRESENSI
-// =========================
 
 // Semua endpoint presensi wajib login (token)
 router.use(authenticateToken);
 
 // CHECK-IN
-router.post('/check-in', presensiController.CheckIn);
+router.post('/check-in', 
+  [authenticateToken, presensiController.upload.single("image")],
+  presensiController.CheckIn);
 
 // CHECK-OUT
 router.post('/check-out', presensiController.CheckOut);

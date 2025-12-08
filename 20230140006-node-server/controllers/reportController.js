@@ -5,36 +5,23 @@ const { format } = require("date-fns-tz");
 
 exports.getDailyReport = async (req, res) => {
   try {
-    const { nama } = req.query;
-
-    let options = {
-      include: [
-        {
-          model: User,
-          as: "user",
-          attributes: ["nama"],
-        },
-      ],
-    };
-
-    if (nama) {
-      // Baris ini akan error jika 'Op' tidak diimpor
-      options.include[0].where = {
-        nama: {
-          [Op.like]: `%${nama}%`,
-        },
-      };
-    }
-
-    const records = await Presensi.findAll(options);
-
-    res.json({
-      reportDate: new Date().toLocaleDateString(),
-      data: records,
+    const reports = await Presensi.findAll({
+      include: [{ model: User, as: 'user' }]
     });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Gagal mengambil laporan", error: error.message });
+
+    const mapped = reports.map(r => ({
+      id: r.id,
+      checkIn: r.checkIn,
+      checkOut: r.checkOut,
+      latitude: r.latitude,
+      longitude: r.longitude,
+      user: r.user,
+      photoUrl: r.buktiFoto ? `http://localhost:3001/${r.buktiFoto}` : null
+    }));
+
+    res.json({ data: mapped });
+  } catch (err) {
+    console.error('Error in getDailyReport:', err);
+    res.status(500).json({ message: "Gagal mengambil report", error: err.message });
   }
 };
