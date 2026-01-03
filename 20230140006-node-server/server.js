@@ -9,6 +9,9 @@ const presensiRoutes = require("./routes/presensi");
 const reportRoutes = require("./routes/reports");
 const authRoutes = require("./routes/auth");
 
+//yg baru
+const iotRoutes = require("./routes/iot");
+app.use("/api/iot", iotRoutes);
 
 // Middleware
 app.use(cors());
