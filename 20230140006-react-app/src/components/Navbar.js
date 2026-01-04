@@ -1,5 +1,3 @@
-// src/components/Navbar.jsx   ← taruh di sini
-
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
@@ -30,7 +28,6 @@ function Navbar() {
 
   const isActive = (path) => location.pathname === path;
 
-  // Warna aktif KONSISTEN untuk semua menu
   const activeClass = "bg-blue-100 text-blue-700 font-semibold shadow-sm";
   const inactiveClass = "text-gray-600 hover:bg-gray-50 hover:text-gray-900";
 
@@ -38,6 +35,7 @@ function Navbar() {
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/dashboard" className="flex items-center space-x-3">
@@ -70,6 +68,7 @@ function Navbar() {
               Presensi
             </Link>
 
+            {/* admin only */}
             {user.role === "admin" && (
               <Link
                 to="/reports"
@@ -80,32 +79,40 @@ function Navbar() {
                 Laporan Admin
               </Link>
             )}
+
+            {/* 🔥 Monitoring Suhu */}
+            <Link
+              to="/monitoring"
+              className={`px-6 py-2.5 rounded-full font-medium transition-all ${
+                isActive("/monitoring") ? activeClass : inactiveClass
+              }`}
+            >
+              Monitoring Suhu
+            </Link>
           </div>
 
-          {/* Desktop User + Logout */}
+          {/* Desktop User */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+              <div className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">
                 {user.nama.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-800">
-                  {user.nama}
-                </p>
+                <p className="text-sm font-semibold">{user.nama}</p>
                 <p className="text-xs text-gray-500 capitalize">{user.role}</p>
               </div>
             </div>
 
             <button
               onClick={handleLogout}
-              className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-full font-medium transition-all shadow-md"
+              className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-5 py-2.5 rounded-full font-medium"
             >
               <LogOut className="w-4 h-4" />
               <span>Logout</span>
             </button>
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Mobile Toggle */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="md:hidden text-gray-700"
@@ -117,56 +124,57 @@ function Navbar() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
-          <div className="px-4 py-5 space-y-3">
-            <div className="flex items-center space-x-3 pb-4 border-b border-gray-200">
-              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                {user.nama.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800">{user.nama}</p>
-                <p className="text-sm text-gray-500 capitalize">{user.role}</p>
-              </div>
-            </div>
+        <div className="md:hidden bg-white border-t border-gray-200 px-4 py-5 space-y-3">
 
-            <Link
-              to="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-6 py-3 rounded-full font-medium ${
-                isActive("/dashboard") ? activeClass : "text-gray-700"
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/presensi"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-6 py-3 rounded-full font-medium ${
-                isActive("/presensi") ? activeClass : "text-gray-700"
-              }`}
-            >
-              Presensi
-            </Link>
-            {user.role === "admin" && (
-              <Link
-                to="/reports"
-                onClick={() => setMobileMenuOpen(false)}
-                className={`block px-6 py-3 rounded-full font-medium ${
-                  isActive("/reports") ? activeClass : "text-gray-700"
-                }`}
-              >
-                Laporan Admin
-              </Link>
-            )}
+          <Link
+            to="/dashboard"
+            className={`block px-6 py-3 rounded-full font-medium ${
+              isActive("/dashboard") ? activeClass : inactiveClass
+            }`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Dashboard
+          </Link>
 
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center space-x-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-full font-medium mt-4"
+          <Link
+            to="/presensi"
+            className={`block px-6 py-3 rounded-full font-medium ${
+              isActive("/presensi") ? activeClass : inactiveClass
+            }`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Presensi
+          </Link>
+
+          {user.role === "admin" && (
+            <Link
+              to="/reports"
+              className={`block px-6 py-3 rounded-full font-medium ${
+                isActive("/reports") ? activeClass : inactiveClass
+              }`}
+              onClick={() => setMobileMenuOpen(false)}
             >
-              <LogOut className="w-5 h-5" />
-              <span>Logout</span>
-            </button>
-          </div>
+              Laporan Admin
+            </Link>
+          )}
+
+          {/* 🔥 Monitoring di Mobile */}
+          <Link
+            to="/monitoring"
+            className={`block px-6 py-3 rounded-full font-medium ${
+              isActive("/monitoring") ? activeClass : inactiveClass
+            }`}
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Monitoring Suhu
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="w-full bg-red-500 text-white py-3 rounded-full mt-4 font-medium"
+          >
+            Logout
+          </button>
         </div>
       )}
     </nav>
